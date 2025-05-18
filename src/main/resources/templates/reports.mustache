@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | Finance Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Finance Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/budgets">Budgets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/savings">Saving Goals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reports">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/import">Import</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Financial Reports</h1>
+        
+        <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="current-month-tab" data-bs-toggle="tab" data-bs-target="#current-month" type="button" role="tab">Current Month</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="last-month-tab" data-bs-toggle="tab" data-bs-target="#last-month" type="button" role="tab">Last Month</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="last-30-days-tab" data-bs-toggle="tab" data-bs-target="#last-30-days" type="button" role="tab">Last 30 Days</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom" type="button" role="tab">Custom Period</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="reportTabsContent">
+            <!-- Current Month Report -->
+            <div class="tab-pane fade show active" id="current-month" role="tabpanel">
+                {{#currentMonthSummary}}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <h5 class="card-title">Income</h5>
+                                <h2 class="card-text">€{{totalIncome}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-danger">
+                            <div class="card-body">
+                                <h5 class="card-title">Expenses</h5>
+                                <h2 class="card-text">€{{totalExpenses}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white {{#balance}}bg-info{{/balance}}{{^balance}}bg-warning{{/balance}}">
+                            <div class="card-body">
+                                <h5 class="card-title">Balance</h5>
+                                <h2 class="card-text">€{{balance}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Expenses by Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    {{#expensesByCategory}}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{key.name}}
+                                        <span class="badge bg-danger rounded-pill">€{{value}}</span>
+                                    </li>
+                                    {{/expensesByCategory}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Income by Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    {{#incomeByCategory}}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{key.name}}
+                                        <span class="badge bg-success rounded-pill">€{{value}}</span>
+                                    </li>
+                                    {{/incomeByCategory}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <a href="/api/reports/download/current-month" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Download PDF Report
+                    </a>
+                </div>
+                {{/currentMonthSummary}}
+            </div>
+            
+            <!-- Last Month Report -->
+            <div class="tab-pane fade" id="last-month" role="tabpanel">
+                {{#lastMonthSummary}}
+                <!-- Similar structure as current month -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <h5 class="card-title">Income</h5>
+                                <h2 class="card-text">€{{totalIncome}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-danger">
+                            <div class="card-body">
+                                <h5 class="card-title">Expenses</h5>
+                                <h2 class="card-text">€{{totalExpenses}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white {{#balance}}bg-info{{/balance}}{{^balance}}bg-warning{{/balance}}">
+                            <div class="card-body">
+                                <h5 class="card-title">Balance</h5>
+                                <h2 class="card-text">€{{balance}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <a href="/api/reports/download/last-month" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Download PDF Report
+                    </a>
+                </div>
+                {{/lastMonthSummary}}
+            </div>
+            
+            <!-- Last 30 Days Report -->
+            <div class="tab-pane fade" id="last-30-days" role="tabpanel">
+                {{#last30DaysSummary}}
+                <!-- Similar structure as current month -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <h5 class="card-title">Income</h5>
+                                <h2 class="card-text">€{{totalIncome}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-danger">
+                            <div class="card-body">
+                                <h5 class="card-title">Expenses</h5>
+                                <h2 class="card-text">€{{totalExpenses}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white {{#balance}}bg-info{{/balance}}{{^balance}}bg-warning{{/balance}}">
+                            <div class="card-body">
+                                <h5 class="card-title">Balance</h5>
+                                <h2 class="card-text">€{{balance}}</h2>
+                                <small>{{periodStart}} - {{periodEnd}}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <a href="/api/reports/download/last-30-days" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Download PDF Report
+                    </a>
+                </div>
+                {{/last30DaysSummary}}
+            </div>
+            
+            <!-- Custom Period Report -->
+            <div class="tab-pane fade" id="custom" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form action="/reports/custom" method="get">
+                            <div class="row mb-3">
+                                <div class="col-md-5">
+                                    <label for="startDate" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">Generate Report</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

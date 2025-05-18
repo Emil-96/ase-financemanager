@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgets | Finance Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Finance Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/budgets">Budgets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/savings">Saving Goals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/import">Import</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Budgets</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBudgetModal">Create Budget</button>
+        </div>
+
+        <!-- Budgets List -->
+        <div class="row">
+            {{#budgets}}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{name}}</h5>
+                        <div>
+                            <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#editBudgetModal{{id}}">Edit</button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteBudgetModal{{id}}">Delete</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Amount:</strong> €{{amount}}</p>
+                        <p><strong>Category:</strong> {{category.name}}</p>
+                        <p><strong>Period:</strong> {{startDate}} to {{endDate}}</p>
+                        
+                        <div class="progress mb-3">
+                            <div class="progress-bar {{#isBudgetThresholdExceeded}}bg-danger{{/isBudgetThresholdExceeded}}" 
+                                 role="progressbar" 
+                                 style="width: {{calculateBudgetSpendingPercentage}}%" 
+                                 aria-valuenow="{{calculateBudgetSpendingPercentage}}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{calculateBudgetSpendingPercentage}}%
+                            </div>
+                        </div>
+                        
+                        <p class="{{#isBudgetThresholdExceeded}}text-danger{{/isBudgetThresholdExceeded}}">
+                            <strong>Spent:</strong> €{{calculateBudgetSpending}} of €{{amount}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {{/budgets}}
+            
+            {{^budgets}}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No budgets found. Create a new budget to start tracking your spending.
+                </div>
+            </div>
+            {{/budgets}}
+        </div>
+    </div>
+
+    <!-- Add Budget Modal -->
+    <div class="modal fade" id="addBudgetModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Budget</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addBudgetForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Budget Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount (€)</label>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="categoryId" required>
+                                {{#categories}}
+                                <option value="{{id}}">{{name}}</option>
+                                {{/categories}}
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('addBudgetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const budgetData = {
+                name: document.getElementById('name').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                categoryId: parseInt(document.getElementById('category').value),
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value
+            };
+            
+            fetch('/api/budgets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(budgetData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error creating budget');
+                    console.error(response);
+                }
+            })
+            .catch(error => {
+                alert('Error creating budget');
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saving Goals | Finance Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Finance Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/budgets">Budgets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/savings">Saving Goals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/import">Import</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Saving Goals</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSavingGoalModal">Create Saving Goal</button>
+        </div>
+
+        <!-- Saving Goals List -->
+        <div class="row">
+            {{#savingGoals}}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{name}}</h5>
+                        <div>
+                            <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target="#addContributionModal{{id}}">Contribute</button>
+                            <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#editSavingGoalModal{{id}}">Edit</button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteSavingGoalModal{{id}}">Delete</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><strong>Current:</strong> €{{currentAmount}}</span>
+                            <span><strong>Target:</strong> €{{targetAmount}}</span>
+                        </div>
+                        
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{progress}}%" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100">
+                                {{progress}}%
+                            </div>
+                        </div>
+                        
+                        <p><strong>Target Date:</strong> {{targetDate}}</p>
+                        
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                To reach your goal by the target date, you need to save approximately 
+                                <strong>€{{monthlyContribution}}</strong> per month.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/savingGoals}}
+            
+            {{^savingGoals}}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No saving goals found. Create a new saving goal to start tracking your progress.
+                </div>
+            </div>
+            {{/savingGoals}}
+        </div>
+    </div>
+
+    <!-- Add Saving Goal Modal -->
+    <div class="modal fade" id="addSavingGoalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Saving Goal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addSavingGoalForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Goal Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="targetAmount" class="form-label">Target Amount (€)</label>
+                            <input type="number" step="0.01" class="form-control" id="targetAmount" name="targetAmount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="currentAmount" class="form-label">Initial Amount (€)</label>
+                            <input type="number" step="0.01" class="form-control" id="currentAmount" name="currentAmount" value="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="targetDate" class="form-label">Target Date</label>
+                            <input type="date" class="form-control" id="targetDate" name="targetDate" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('addSavingGoalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const savingGoalData = {
+                name: document.getElementById('name').value,
+                targetAmount: parseFloat(document.getElementById('targetAmount').value),
+                currentAmount: parseFloat(document.getElementById('currentAmount').value),
+                targetDate: document.getElementById('targetDate').value
+            };
+            
+            fetch('/api/saving-goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(savingGoalData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error creating saving goal');
+                    console.error(response);
+                }
+            })
+            .catch(error => {
+                alert('Error creating saving goal');
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html> 

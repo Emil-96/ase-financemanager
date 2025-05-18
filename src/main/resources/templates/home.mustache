@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .card {
+            margin-bottom: 20px;
+        }
+        .nav-link.active {
+            font-weight: bold;
+        }
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 2px 6px;
+            border-radius: 50%;
+            background-color: red;
+            color: white;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Finance Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/budgets">Budgets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/savings">Saving Goals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/import">Import</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal">
+                            <i class="bi bi-bell"></i> Notifications
+                            {{#notifications.size}}
+                            <span class="notification-badge">{{notifications.size}}</span>
+                            {{/notifications.size}}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Financial Dashboard</h1>
+        
+        {{#summary}}
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Income</h5>
+                        <h2 class="card-text">€{{totalIncome}}</h2>
+                        <small>{{periodStart}} - {{periodEnd}}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Expenses</h5>
+                        <h2 class="card-text">€{{totalExpenses}}</h2>
+                        <small>{{periodStart}} - {{periodEnd}}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white {{#balance}}bg-info{{/balance}}{{^balance}}bg-warning{{/balance}}">
+                    <div class="card-body">
+                        <h5 class="card-title">Balance</h5>
+                        <h2 class="card-text">€{{balance}}</h2>
+                        <small>{{periodStart}} - {{periodEnd}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/summary}}
+        
+        <!-- Active Budgets -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Active Budgets</h5>
+                    </div>
+                    <div class="card-body">
+                        {{#budgets}}
+                        <div class="mb-3">
+                            <h6>{{name}} (€{{amount}})</h6>
+                            <div class="progress">
+                                <div class="progress-bar {{#isBudgetThresholdExceeded}}bg-danger{{/isBudgetThresholdExceeded}}" role="progressbar" style="width: {{calculateBudgetSpendingPercentage}}%">
+                                    {{calculateBudgetSpendingPercentage}}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{startDate}} - {{endDate}}</small>
+                        </div>
+                        {{/budgets}}
+                        {{^budgets}}
+                        <p>No active budgets found. <a href="/budgets">Create a budget</a>.</p>
+                        {{/budgets}}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Saving Goals -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Saving Goals</h5>
+                    </div>
+                    <div class="card-body">
+                        {{#savingGoals}}
+                        <div class="mb-3">
+                            <h6>{{first.name}} (€{{first.currentAmount}}/€{{first.targetAmount}})</h6>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{second}}%">
+                                    {{second}}%
+                                </div>
+                            </div>
+                            <small class="text-muted">Target: {{first.targetDate}}</small>
+                        </div>
+                        {{/savingGoals}}
+                        {{^savingGoals}}
+                        <p>No saving goals found. <a href="/savings">Create a saving goal</a>.</p>
+                        {{/savingGoals}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="/transactions?type=new" class="btn btn-success w-100">Add Income</a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/transactions?type=new" class="btn btn-danger w-100">Add Expense</a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/budgets?type=new" class="btn btn-primary w-100">Create Budget</a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/savings?type=new" class="btn btn-info w-100">Set Saving Goal</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{#notifications}}
+                    <div class="alert alert-info">
+                        <h6>{{title}}</h6>
+                        <p>{{message}}</p>
+                        <small>{{date}}</small>
+                    </div>
+                    {{/notifications}}
+                    {{^notifications}}
+                    <p>No notifications at this time.</p>
+                    {{/notifications}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button id="markAllReadBtn" class="btn btn-primary">Mark All as Read</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const markAllReadBtn = document.getElementById('markAllReadBtn');
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function() {
+                    fetch('/api/notifications/mark-all-read', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('Error marking notifications as read');
+                            console.error(response);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error marking notifications as read');
+                        console.error(error);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,9 +1,6 @@
 package com.emil.financemanager.model
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
+import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -15,5 +12,17 @@ data class MoneyTransaction(
 
     val amount: BigDecimal,
     val description: String,
-    val timestamp: LocalDateTime = LocalDateTime.now()
+    val timestamp: LocalDateTime = LocalDateTime.now(),
+    
+    @ManyToOne
+    val category: Category,
+    
+    val type: TransactionType,
+    
+    @ManyToOne
+    val budget: Budget? = null
 )
+
+enum class TransactionType {
+    INCOME, EXPENSE
+}

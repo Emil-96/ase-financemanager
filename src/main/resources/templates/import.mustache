@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import | Finance Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Finance Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/budgets">Budgets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/savings">Saving Goals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/import">Import</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Import Transactions</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">CSV Import</h5>
+            </div>
+            <div class="card-body">
+                <form id="importForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select CSV file from your bank</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            The CSV file should contain at least: date, description, amount, and ideally a category.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="dateFormat" class="form-label">Date Format</label>
+                        <select class="form-select" id="dateFormat" name="dateFormat">
+                            <option value="yyyy-MM-dd">YYYY-MM-DD</option>
+                            <option value="dd/MM/yyyy">DD/MM/YYYY</option>
+                            <option value="MM/dd/yyyy">MM/DD/YYYY</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="delimiter" class="form-label">Delimiter</label>
+                        <select class="form-select" id="delimiter" name="delimiter">
+                            <option value=",">Comma (,)</option>
+                            <option value=";">Semicolon (;)</option>
+                            <option value="\t">Tab</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="defaultCategory" class="form-label">Default Category (for uncategorized transactions)</label>
+                        <select class="form-select" id="defaultCategory" name="defaultCategoryId">
+                            {{#categories}}
+                            <option value="{{id}}">{{name}} ({{type}})</option>
+                            {{/categories}}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="skipHeader" name="skipHeader" checked>
+                        <label class="form-check-label" for="skipHeader">Skip first row (header)</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Import Transactions</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Import Guide</h5>
+            </div>
+            <div class="card-body">
+                <h6>Supported Bank Formats</h6>
+                <p>This import tool supports CSV exports from most major banks. Follow these steps to import your transactions:</p>
+                
+                <ol>
+                    <li>Export your transactions from your bank's website or app as a CSV file.</li>
+                    <li>Select the appropriate date format and delimiter that matches your bank's export format.</li>
+                    <li>Choose a default category for any transactions that cannot be automatically categorized.</li>
+                    <li>Upload the file and click Import.</li>
+                </ol>
+                
+                <div class="alert alert-info">
+                    <strong>Note:</strong> The system will automatically try to match transactions with existing categories based on the description.
+                    Duplicate transactions (same date, amount, and description) will be skipped.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('importForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file').files[0]);
+            formData.append('dateFormat', document.getElementById('dateFormat').value);
+            formData.append('delimiter', document.getElementById('delimiter').value);
+            formData.append('defaultCategoryId', document.getElementById('defaultCategory').value);
+            formData.append('skipHeader', document.getElementById('skipHeader').checked);
+            
+            fetch('/api/import/csv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Import successful!');
+                    window.location.href = '/transactions';
+                } else {
+                    alert('Error importing transactions');
+                    console.error(response);
+                }
+            })
+            .catch(error => {
+                alert('Error importing transactions');
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html> 
